@@ -8,7 +8,7 @@ let p = new Promise((resolve, reject,a) => {
 
 p.then((data) => {
     console.log(data);
-    comsole.log("promise resolved");
+    console.log("promise resolved");
 })
 .catch((err) => {
     console.log(err);
