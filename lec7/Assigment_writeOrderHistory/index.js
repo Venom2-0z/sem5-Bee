@@ -14,12 +14,12 @@ async function finalOrder(user,order){
     
 
     let ordersHis = await  read("./orderHistory.txt");
-    if(!ordersHis)ordersHis = []
+    if(!ordersHis) ordersHis = []
     ordersHis.push({
         name:user,
         product:order,
     })
-    
+
     console.log(await write("./orderHistory.txt",JSON.stringify(ordersHis)))
    
 }
