@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form class="resform">
+        <input type="text" placeholder="username" id="name" name="name" value="user" required>
+        <input type="text" placeholder="example@gamil.com" id="email" value="user@gmail.com" name="email" required>
+        <input type="password" placeholder="password" id="password" value="123" name="password" required>
+        <button> submit </button>
+
+    </form>
+        <a href="./index.html" >Home</a>
+    <script>
+        const form = document.querySelector(".resform");
+        form.addEventListener("submit",(e)=>{
+            e.preventDefault();
+            const userinfo={};
+            const data  = ((e.target.elements))
+            Array.from(data).forEach(ele=>{
+                if(ele.tagName ==="INPUT")userinfo[ele.name] = ele.value;
+            })
+            regisUser(userinfo);
+        })
+
+        async function regisUser(userobj){
+            console.log(userobj)
+            try{
+                const res = await fetch("http://localhost:4444/user/register",{
+                    body:JSON.stringify(userobj),
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
+                const data = await res.json();
+                console.log(data.message);
+
+            }
+            catch(err){
+                console.log(err.message);
+            }
+            
+        }
+        
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .hidden{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sec1" >
+        <form class="loginform">
+            <input type="text" placeholder="example@gamil.com" id="email" value="user@gmail.com" name="email" required>
+            <input type="password" placeholder="password" id="password" value="123" name="password" required>
+            <button> submit </button>
+        </form>
+        <a href="./index.html" >Home</a>
+
+
+    </div>
+    <div class="sec2 hidden">
+        <h1>Todo</h1>
+        <form class="createform" >
+            <input type="text" required placeholder="Title" >
+            <button>Create</button>
+        </form>
+        <ul class="list" >
+            
+
+        </ul>
+
+    </div>
+
+    <script>
+        const form = document.querySelector(".loginform");
+        const createform = document.querySelector(".createform");
+        const ul = document.querySelector(".list");
+        let curruser = "";
+        let todosArray= []
+        if(curruser!=""){
+            document.querySelector(".sec1").classList.add("hidden")
+            document.querySelector(".sec2").classList.remove("hidden")
+        }
+        form.addEventListener("submit",(e)=>{
+            e.preventDefault();
+            const userinfo={};
+            const data  = ((e.target.elements))
+            Array.from(data).forEach(ele=>{
+                if(ele.tagName ==="INPUT")userinfo[ele.name] = ele.value;
+            })
+            loginUser(userinfo);
+        })
+        
+        createform.addEventListener("submit",(e)=>{
+            e.preventDefault();
+            const title = e.target.elements[0].value;
+            const todoobj = {
+                id:crypto.randomUUID(),
+                title,
+                email:curruser
+            }
+            createTodo(todoobj)
+        })
+        
+        ul.addEventListener("click",(e)=>{
+            if(e.target.tagName==="BUTTON" && e.target.innerText==="Delete"){
+                const todoele = e.target.parentElement;
+                const id = todoele?.id
+                deleteTodo(id)
+            }
+        })
+
+        async function loginUser(userobj){
+            try{
+
+                const res = await fetch("http://localhost:4444/user/login",{
+                    body:JSON.stringify(userobj),
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
+                const data = await res.json();
+                if(data.success) {
+                    document.querySelector(".sec1").classList.add("hidden")
+                    document.querySelector(".sec2").classList.remove("hidden")
+                    curruser= userobj.email
+                    gettodos()
+                }
+                else console.log(data.message)
+
+            }
+            catch(err){
+                console.log(err.message);
+            }
+            
+        }
+
+        async function gettodos(){
+            if(curruser===""){
+                console.log("error todo ")
+                return
+            }
+
+            try{
+                const res = await fetch("http://localhost:4444/todo/show",{
+                    body:JSON.stringify({email:curruser}),
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
+                const data = await res.json();
+                if(data.success) {
+                    todosArray = data.data;
+                    todosArray.forEach((ele)=>{
+                       addTodoToDisplay(ele);
+                    })
+                }
+                else console.log(data.message)
+
+            }
+            catch(err){
+                console.log(err.message);
+            }
+        }
+
+
+        async function createTodo(todoobj){
+            try{
+
+                const res = await fetch("http://localhost:4444/todo/create",{
+                    body:JSON.stringify(todoobj),
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
+                const data = await res.json();
+                if(data.success) {
+                    console.log(data.message);
+                    todosArray.push(todoobj);
+                    addTodoToDisplay(todoobj);
+                }
+                else {console.log(data.message)}
+
+            }
+            catch(err){
+                console.log(err.message);
+            }
+
+        }
+
+
+        async function deleteTodo(id){
+            try{
+
+                const res = await fetch(`http://localhost:4444/todo/delete/${id}`)
+                const data = await res.json();
+                if(data.success) {
+                    console.log(data.message);
+                    const id = todosArray.findIndex()
+                    if(!id){
+                        console.log("element tobe deleted not in array ")
+                    }
+                    
+                }
+                else {console.log(data.message)}
+
+            }
+            catch(err){
+                console.log(err.message);
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+        function addTodoToDisplay(todoObj){
+            const newli = document.createElement("li");
+            newli.innerHTML=`
+                <span>${todoObj.title}</span>
+                <button>Delete</button>
+            `
+            newli.id= todoObj.id;
+            ul.appendChild(newli);
+        }
+        
+
+    </script>
+</body>
+</html>
