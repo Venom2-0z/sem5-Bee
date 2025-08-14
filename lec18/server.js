@@ -1,8 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import User from "./models/userModel.js";
-// import {User2} from "./models/userModel.js";
-// import blocks from "./models/user.js";
+import Blog from "./models/blogModel.js";
 const app = express();
 
 app.use(express.json());
@@ -45,14 +44,46 @@ app.get("/api/users/:id", async (req, res) => {
     }
 });
 
+// Create a new blog
+app.post("/api/blogs", async (req, res) => {
+    const { title, content, userId } = req.body;
+    try {
+        const blog = new Blog({ title, content, userId });
+        await blog.save();
+        await User.findByIdAndUpdate(userId, { $push: { blogs: blog._id } });
+        res.status(201).json({ success: true, message: "Blog created successfully", blog });
+    } catch (error) {
+        console.error("Error creating blog:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
 
+// Get all blogs
+app.get("/api/blogs", async (req, res) => {
+    try {
+        const blogs = await Blog.find().populate("userId", "name email");
+        res.status(200).json({ success: true, blogs });
+    } catch (error) {
+        console.error({ success: false, message: "Error fetching blogs:", error });
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
 
-async function addblock(){
-    const name = "cwdcwvev";
-    const block = new blocks({ name });
-    await block.save();
-}
-addblock()
+// Get a single blog by ID
+app.get("/api/blogs/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const blog = await Blog.findById(id).populate("userId", "name email");
+        if (!blog) {
+            return res.status(404).json({ success: false, message: "Blog not found" });
+        }
+        res.status(200).json({ success: true, blog });
+    } catch (error) {
+        console.error({ success: false, message: "Error fetching blog:", error });
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
+});
+
 
 mongoose.connect("mongodb://localhost:27017/lec17" )
     .then(() => {
